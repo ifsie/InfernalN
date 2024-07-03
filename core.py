@@ -20,17 +20,17 @@ ctypes.windll.kernel32.SetConsoleTitleW('Infernal - Discord Server Nuker')
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 text_art = """    
-                                     
- ██▓ ███▄    █   █████▒▓█████  ██▀███   ███▄    █  ▄▄▄       ██▓    
-▓██▒ ██ ▀█   █ ▓██   ▒ ▓█   ▀ ▓██ ▒ ██▒ ██ ▀█   █ ▒████▄    ▓██▒            !banall !kickall
-▒██▒▓██  ▀█ ██▒▒████ ░ ▒███   ▓██ ░▄█ ▒▓██  ▀█ ██▒▒██  ▀█▄  ▒██░      !removechannels !servername
-░██░▓██▒  ▐▌██▒░▓█▒  ░ ▒▓█  ▄ ▒██▀▀█▄  ▓██▒  ▐▌██▒░██▄▄▄▄██ ▒██░    
-░██░▒██░   ▓██░░▒█░    ░▒████▒░██▓ ▒██▒▒██░   ▓██░ ▓█   ▓██▒░██████▒
-░▓  ░ ▒░   ▒ ▒  ▒ ░    ░░ ▒░ ░░ ▒▓ ░▒▓░░ ▒░   ▒ ▒  ▒▒   ▓▒█░░ ▒░▓  ░
- ▒ ░░ ░░   ░ ▒░ ░       ░ ░  ░  ░▒ ░ ▒░░ ░░   ░ ▒░  ▒   ▒▒ ░░ ░ ▒  ░
- ▒ ░   ░   ░ ░  ░ ░       ░     ░░   ░    ░   ░ ░    ifs?
-  ░   ▒     ░ ░   
- ░           ░            ░  ░   ░              ░       ░  ░    ░  ░
+                                      
+   ██▓ ███▄    █   █████▒▓█████  ██▀███   ███▄    █  ▄▄▄       ██▓    
+  ▓██▒ ██ ▀█   █ ▓██   ▒ ▓█   ▀ ▓██ ▒ ██▒ ██ ▀█   █ ▒████▄    ▓██▒            !banall !kickall
+  ▒██▒▓██  ▀█ ██▒▒████ ░ ▒███   ▓██ ░▄█ ▒▓██  ▀█ ██▒▒██  ▀█▄  ▒██░      !removechannels !servername
+  ░██░▓██▒  ▐▌██▒░▓█▒  ░ ▒▓█  ▄ ▒██▀▀█▄  ▓██▒  ▐▌██▒░██▄▄▄▄██ ▒██░    
+  ░██░▒██░   ▓██░░▒█░    ░▒████▒░██▓ ▒██▒▒██░   ▓██░ ▓█   ▓██▒░██████▒
+  ░▓  ░ ▒░   ▒ ▒  ▒ ░    ░░ ▒░ ░░ ▒▓ ░▒▓░░ ▒░   ▒ ▒  ▒▒   ▓▒█░░ ▒░▓  ░   ifs?
+   ▒ ░░ ░░   ░ ▒░ ░       ░ ░  ░  ░▒ ░ ▒░░ ░░   ░ ▒░  ▒   ▒▒ ░░ ░ ▒  ░   
+   ▒ ░   ░   ░ ░  ░ ░       ░     ░░   ░    ░   ░ ░    
+    ░   ▒     ░ ░   
+   ░           ░            ░  ░   ░              ░       ░  ░    ░  ░
                                                                     
                                                        
 """                                 
@@ -156,4 +156,5 @@ async def change_server_name(ctx):
     except discord.Forbidden:
         print(f'[{Fore.LIGHTBLACK_EX}{current_time}{Fore.RESET}] [{Fore.RED}-{Fore.RESET}] Failed to change server name (no permission)')
 
-bot.run('', log_handler=None)
+#Add your token into here
+bot.run('ENTER_TOKEN_HERE', log_handler=None)
