@@ -19,7 +19,7 @@ colorama.init(autoreset=True)
 
 ctypes.windll.kernel32.SetConsoleTitleW('Infernal - Discord Server Nuker')
 
-bot = commands.Bot(command_prefix='$', intents=intents)
+bot = commands.Bot(command_prefix='!', intents=intents)
 text_art = """    
                                       
    ██▓ ███▄    █   █████▒▓█████  ██▀███   ███▄    █  ▄▄▄       ██▓    
