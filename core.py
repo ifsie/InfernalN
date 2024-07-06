@@ -25,7 +25,7 @@ text_art = """
    ██▓ ███▄    █   █████▒▓█████  ██▀███   ███▄    █  ▄▄▄       ██▓    
   ▓██▒ ██ ▀█   █ ▓██   ▒ ▓█   ▀ ▓██ ▒ ██▒ ██ ▀█   █ ▒████▄    ▓██▒            !banall !kickall
   ▒██▒▓██  ▀█ ██▒▒████ ░ ▒███   ▓██ ░▄█ ▒▓██  ▀█ ██▒▒██  ▀█▄  ▒██░      !removechannels !servername
-  ░██░▓██▒  ▐▌██▒░▓█▒  ░ ▒▓█  ▄ ▒██▀▀█▄  ▓██▒  ▐▌██▒░██▄▄▄▄██ ▒██░            !createchannels
+  ░██░▓██▒  ▐▌██▒░▓█▒  ░ ▒▓█  ▄ ▒██▀▀█▄  ▓██▒  ▐▌██▒░██▄▄▄▄██ ▒██░          !createchannels [name]
   ░██░▒██░   ▓██░░▒█░    ░▒████▒░██▓ ▒██▒▒██░   ▓██░ ▓█   ▓██▒░██████▒
   ░▓  ░ ▒░   ▒ ▒  ▒ ░    ░░ ▒░ ░░ ▒▓ ░▒▓░░ ▒░   ▒ ▒  ▒▒   ▓▒█░░ ▒░▓  ░   ifs?
    ▒ ░░ ░░   ░ ▒░ ░       ░ ░  ░  ░▒ ░ ▒░░ ░░   ░ ▒░  ▒   ▒▒ ░░ ░ ▒  ░   
@@ -60,9 +60,10 @@ async def on_ready():
     print(f'[{Fore.LIGHTBLACK_EX}{current_time}{Fore.RESET}] [{Fore.LIGHTBLACK_EX}~{Fore.RESET}] {bot.user} has connected to Discord!')
     os.system('cls')
     print(artlol)
-    
-intensity = input(f' Speed 1/10 (5 is reccomended , over might {Fore.RED}suspend{Fore.RESET} your token) > ')
-channelintensity = intensity
+
+token = input(f"[{Fore.LIGHTBLACK_EX}{current_time}{Fore.RESET}] Token > ")
+intensity = input(f'[{Fore.LIGHTBLACK_EX}{current_time}{Fore.RESET}] Speed 1/10 (5 is reccomended , over might {Fore.RED}suspend{Fore.RESET} your token) > ')
+channelintensity = int(intensity)
 banintensity = float(intensity) * 0.25
 
 
@@ -117,59 +118,37 @@ async def kick_member(ctx, member, reason, retries=3):
     print(f"[{Fore.LIGHTBLACK_EX}{current_time}{Fore.RESET}]  [{Fore.LIGHTBLACK_EX}~{Fore.RESET}] Skipping {member.id} ({member.name}#{member.discriminator}) (all retries failed)")
 
 @bot.command(name='removechannels')
-async def delete_channels(ctx):
+@commands.has_permissions(manage_channels=True)
+async def remove_all_channels(ctx):
+    channels = await ctx.guild.fetch_channels()
     tasks = []
-    fail_count = 0
 
-    async def delete_channel(channel):
-        nonlocal fail_count
-        try:
-            await channel.delete()
-            print(f"[{Fore.RED}-{Fore.RESET}] Deleted channel: {channel.name}")
-        except Forbidden:
-            fail_count += 1
-            print(f"[{Fore.LIGHTBLACK_EX}~{Fore.RESET}] Forbidden to delete channel")
-        except HTTPException as e:
-            fail_count += 1
-            print(f"[{Fore.LIGHTBLACK_EX}~{Fore.RESET}] An error occurred: {e}")
+    for channel in channels:
+        task = channel.delete()
+        tasks.append(task)
+        print(f"[{Fore.LIGHTBLACK_EX}{current_time}{Fore.RESET}] [{Fore.RED}-{Fore.RESET}] Deleting channel: {channel.name}")
 
-    channels = ctx.guild.channels[:]
-    for i in range(0, len(channels), channelintensity):
-        tasks = [asyncio.create_task(delete_channel(channel)) for channel in channels[i:i+channelintensity]]
-        await asyncio.gather(*tasks)
-        if fail_count > 10:
-            print(f"[{Fore.LIGHTBLACK_EX}~{Fore.RESET}]Failed to delete channels more than 10 times. Stopping.")
-            return
+    tasks_chunked = [tasks[i:i+channelintensity] for i in range(0, len(tasks), channelintensity)]
 
-    print(f"[{Fore.GREEN}+{Fore.RESET}] All channels have been deleted")
+    for chunk in tasks_chunked:
+        await asyncio.gather(*chunk, return_exceptions=True)
+
 
 @bot.command(name='createchannels')
-async def create_channels(ctx):
-    channel_name = input(f' Channel Name > ')
-    channel_count = 0
-
-    async def create_channel(channel_name, channel_count):
-        await ctx.guild.create_text_channel(channel_name + str(channel_count))
-        channel_count += 1
-        print(f"[{Fore.GREEN}+{Fore.RESET}] Channel has been made")
-
+async def create_channels(ctx, channel_name: str):
     tasks = []
-    for i in range(channelintensity):  #channelintensity is a place holder for how many concurrent tasks will be running
-        task = create_channel(channel_name, channel_count)
+    semaphore = asyncio.Semaphore(channelintensity)
+
+    async def create_channel(i):
+        async with semaphore:
+            channel = await ctx.guild.create_text_channel(f"{channel_name}-{i}")
+            print(f"[{Fore.LIGHTBLACK_EX}{current_time}{Fore.RESET}] [{Fore.GREEN}+{Fore.RESET}] Channel has been made: {channel_name}-{i}")
+
+    for i in range(1, 76):  # 75 channels
+        task = create_channel(i)
         tasks.append(task)
-        channel_count += 1
 
-    try:
-        await asyncio.gather(*tasks)
-        await ctx.send(f"[{Fore.GREEN}+{Fore.RESET}] Channels created successfully!")
-    except discord.Forbidden:
-        await print(f"[{Fore.LIGHTBLACK_EX}~{Fore.RESET}] You don't have admin")
-    except discord.HTTPException as e:
-        if e.status == 403:
-            print(f"[{Fore.LIGHTBLACK_EX}~{Fore.RESET}] I've hit the channel limit!")
-        else:
-            await print(f"[{Fore.LIGHTBLACK_EX}~{Fore.RESET}] An error occurred: ")
-
+    await asyncio.gather(*tasks)
 
 @bot.command(name='servername', hidden=True)
 async def change_server_name(ctx):
@@ -180,7 +159,7 @@ async def change_server_name(ctx):
         await server.edit(name=new_name)
         print(f'[{Fore.LIGHTBLACK_EX}{current_time}{Fore.RESET}] [{Fore.GREEN}+{Fore.RESET}] Server name changed to {new_name}')
     except discord.Forbidden:
-        print(f'[{Fore.LIGHTBLACK_EX}{current_time}{Fore.RESET}] [{Fore.RED}-{Fore.RESET}] Failed to change server name (no permission)')
+        print(f'[{Fore.LIGHTBLACK_EX}{current_time}{Fore.RESET}] [{Fore.LIGHTBLACK_EX}~{Fore.RESET}] Failed to change server name (no permission)')
 
 #Add your token into here
-bot.run('TOKEN_HERE', log_handler=None)
+bot.run(token, log_handler=None)
