@@ -5,6 +5,7 @@ import concurrent.futures
 import fade
 import os
 import time 
+import logging
 import colorama
 import ctypes
 from colorama import Fore, Back, Style
@@ -17,6 +18,8 @@ intents.message_content = True
 
 colorama.init(autoreset=True)
 
+logger = logging.getLogger('discord')
+logger.disabled = True
 ctypes.windll.kernel32.SetConsoleTitleW('Infernal - Discord Server Nuker')
 
 bot = commands.Bot(command_prefix='!', intents=intents)
@@ -60,6 +63,10 @@ async def on_ready():
     print(f'[{Fore.LIGHTBLACK_EX}{current_time}{Fore.RESET}] [{Fore.LIGHTBLACK_EX}~{Fore.RESET}] {bot.user} has connected to Discord!')
     os.system('cls')
     print(artlol)
+    print(f'''
+  [{Fore.RED}!{Fore.RESET}] If you're nuking a server with 2FA you need to enable that on your user account
+  [{Fore.RED}!{Fore.RESET}] Enable Intents on your bot to ensure the nuke will work
+      ''')
 
 token = input(f"[{Fore.LIGHTBLACK_EX}{current_time}{Fore.RESET}] Token > ")
 intensity = input(f'[{Fore.LIGHTBLACK_EX}{current_time}{Fore.RESET}] Speed 1/10 (5 is reccomended , over might {Fore.RED}suspend{Fore.RESET} your token) > ')
@@ -76,13 +83,15 @@ async def ban_all(ctx):
     for member in ctx.guild.members:
         task = asyncio.create_task(ban_member(ctx, member, reason='Infernal https://discord.gg/2sZcY3tyns', delete_message_days=0))
         tasks.append(task)
-    await asyncio.gather(*tasks, limit=banintensity, return_exceptions=True) #banintensity is a place holder for how many concurrent tasks will be running
+        await asyncio.sleep(0.1)
+    await asyncio.gather(*tasks, limit=banintensity, return_exceptions=True) 
 
 async def ban_member(ctx, member, reason, delete_message_days, retries=3):
     for attempt in range(retries):
         try:
             await ctx.guild.ban(member, reason=reason, delete_message_days=delete_message_days)
             print(f"[{Fore.LIGHTBLACK_EX}{current_time}{Fore.RESET}] [{Fore.GREEN}+{Fore.RESET}] Banned {member.id} ({member.name}#{member.discriminator})")
+            await asyncio.sleep(1)
             return
         except discord.Forbidden:
             print(f"[{Fore.LIGHTBLACK_EX}{current_time}{Fore.RESET}] [{Fore.LIGHTBLACK_EX}~{Fore.RESET}] Skipping {member.id} ({member.name}#{member.discriminator}) (no permission to ban)")
@@ -100,7 +109,8 @@ async def kick_all(ctx):
     for member in ctx.guild.members:
         task = asyncio.create_task(kick_member(ctx, member, reason='Infernal https://discord.gg/2sZcY3tyns'))
         tasks.append(task)
-    await asyncio.gather(*tasks, limit=10, return_exceptions=True)
+        await asyncio.sleep(0.1)
+    await asyncio.gather(*tasks, limit=5, return_exceptions=True)
     ctypes.windll.kernel32.SetConsoleTitleW('Infernal - Discord Server Nuker')
 
 async def kick_member(ctx, member, reason, retries=3):
@@ -108,6 +118,7 @@ async def kick_member(ctx, member, reason, retries=3):
         try:
             await member.kick(reason=reason)
             print(f"[{Fore.LIGHTBLACK_EX}{current_time}{Fore.RESET}] [{Fore.GREEN}+{Fore.RESET}] Kicked {member.id} ({member.name}#{member.discriminator})")
+            await asyncio.sleep(1)
             return
         except discord.Forbidden:
             print(f"[{Fore.LIGHTBLACK_EX}{current_time}{Fore.RESET}] [{Fore.LIGHTBLACK_EX}~{Fore.RESET}] Skipping {member.id} ({member.name}#{member.discriminator}) (no permission to kick)")
@@ -161,5 +172,4 @@ async def change_server_name(ctx):
     except discord.Forbidden:
         print(f'[{Fore.LIGHTBLACK_EX}{current_time}{Fore.RESET}] [{Fore.LIGHTBLACK_EX}~{Fore.RESET}] Failed to change server name (no permission)')
 
-#Add your token into here
-bot.run(token, log_handler=None)
+bot.run(token)
